@@ -1,4 +1,6 @@
 ﻿using Microsoft.Build.Construction;
+using Microsoft.Build.Definition;
+using Microsoft.Build.Evaluation;
 
 namespace WWT.PackageReporter;
 
@@ -7,8 +9,10 @@ internal class Program
     static void Main(string[] args)
     {
         var path = ParseArguments(args);
+        var sln = SolutionFile.Parse(path);
+        var projects = sln.ProjectsByGuid.Values.Select(p => Project.FromFile(p.AbsolutePath, new ProjectOptions())).ToList();
         
-        var sln = SolutionFile.Parse("");
+        
     }
     
     private static string ParseArguments(string[] args)
@@ -19,7 +23,15 @@ internal class Program
             Environment.Exit(0);
         }
 
-        return args[0];
+        var path = args[0];
+
+        if (!File.Exists(path))
+        {
+            Console.WriteLine("The solution file does not exist.");
+            Environment.Exit(1);
+        }
+        
+        return path;
     }
 
     private static void DisplayHelp()
